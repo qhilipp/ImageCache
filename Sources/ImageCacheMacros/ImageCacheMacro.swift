@@ -75,19 +75,22 @@ public struct ImageCacheMacro: PeerMacro {
 		let prefixLength = variableIdentifier.index(variableIdentifier.endIndex, offsetBy: -suffix.count)
 		let identifierPrefix = String(variableIdentifier[..<prefixLength])
 		
+		let hashIdentifier = identifierPrefix.appending("Hash")
+		let cacheIdentifier = identifierPrefix.appending("Cache")
+		
 		return ["""
-		private var \(raw: identifierPrefix)Hash: Int = 0
-		private var \(raw: identifierPrefix)Cache: Image?
+		private var \(raw: hashIdentifier): Int = 0
+		private var \(raw: cacheIdentifier): Image?
 		var \(raw: identifierPrefix): Image? {
 			get {
-				if \(raw: variableName).hashValue != \(raw: identifierPrefix)Hash,
-					let \(raw: variableName),
-					let uiImage = UIImage(data: \(raw: variableName))
+				if \(raw: variableIdentifier).hashValue != \(raw: hashIdentifier),
+					let \(raw: variableIdentifier),
+					let uiImage = UIImage(data: \(raw: variableIdentifier))
 				{
-					\(raw: identifierPrefix)Cache = Image(uiImage: uiImage)
-					\(raw: identifierPrefix)Hash = \(raw: variableName).hashValue
+					\(raw: cacheIdentifier) = Image(uiImage: uiImage)
+					\(raw: hashIdentifier) = \(raw: variableName).hashValue
 				}
-				return \(raw: identifierPrefix)Cache
+				return \(raw: cacheIdentifier)
 			}
 		}
 		"""]
