@@ -8,10 +8,16 @@ import AppKit
 
 enum ImageCacheError: CustomStringConvertible, Error {
 	case internalError
+	case onlyVariableDecl
+	case onlyOneDecl
+	case mustHaveSuffix(String, String)
 	
 	var description: String {
 		switch self {
 			case .internalError: "@ImageChage produced an internal error, please report"
+			case .onlyVariableDecl: "@ImageCache only allows variable declarations"
+			case .onlyOneDecl: "@ImageCache only allows one variable declaration"
+			case .mustHaveSuffix(let variableIdentifier, let suffix): "@ImageCache requires \(variableIdentifier) to have the suffix \(suffix)"
 		}
 	}
 }
@@ -43,26 +49,45 @@ enum ImageCacheError: CustomStringConvertible, Error {
 ///		}
 public struct ImageCacheMacro: PeerMacro {
 	public static func expansion(of node: SwiftSyntax.AttributeSyntax, providingPeersOf declaration: some SwiftSyntax.DeclSyntaxProtocol, in context: some SwiftSyntaxMacros.MacroExpansionContext) throws -> [SwiftSyntax.DeclSyntax] {
-		let suffix = "Data"
-		guard let variableName = declaration.as(SwiftSyntax.VariableDeclSyntax.self)?.bindings.first?.pattern.as(IdentifierPatternSyntax.self)?.identifier.text else {
-//			throw ImageCacheError.internalError
-			return []
+		guard let variableDeclaration = declaration.as(SwiftSyntax.VariableDeclSyntax.self) else {
+			throw ImageCacheError.onlyVariableDecl
 		}
-		let prefixLength = variableName.index(variableName.endIndex, offsetBy: -suffix.count)
-		let namePrefix = String(variableName[..<prefixLength])
+		
+		guard variableDeclaration.bindings.count == 1 else {
+			throw ImageCacheError.onlyOneDecl
+		}
+		
+		guard let firstBinding = variableDeclaration.bindings.first else {
+			throw ImageCacheError.internalError
+		}
+		
+		guard let identifierPattern = firstBinding.pattern.as(IdentifierPatternSyntax.self) else {
+			throw ImageCacheError.internalError
+		}
+		
+		let variableIdentifier = identifierPattern.identifier.text
+		let suffix = "Data"
+		
+		guard variableIdentifier.hasSuffix(suffix) else {
+			throw ImageCacheError.mustHaveSuffix(variableIdentifier, suffix)
+		}
+		
+		let prefixLength = variableIdentifier.index(variableIdentifier.endIndex, offsetBy: -suffix.count)
+		let identifierPrefix = String(variableIdentifier[..<prefixLength])
+		
 		return ["""
-		private var \(raw: namePrefix)Hash: Int = 0
-		private var \(raw: namePrefix)Cache: Image?
-		var \(raw: namePrefix): Image? {
+		private var \(raw: identifierPrefix)Hash: Int = 0
+		private var \(raw: identifierPrefix)Cache: Image?
+		var \(raw: identifierPrefix): Image? {
 			get {
-				if \(raw: variableName).hashValue != \(raw: namePrefix)Hash,
+				if \(raw: variableName).hashValue != \(raw: identifierPrefix)Hash,
 					let \(raw: variableName),
 					let uiImage = UIImage(data: \(raw: variableName))
 				{
-					\(raw: namePrefix)Cache = Image(uiImage: uiImage)
-					\(raw: namePrefix)Hash = \(raw: variableName).hashValue
+					\(raw: identifierPrefix)Cache = Image(uiImage: uiImage)
+					\(raw: identifierPrefix)Hash = \(raw: variableName).hashValue
 				}
-				return \(raw: namePrefix)Cache
+				return \(raw: identifierPrefix)Cache
 			}
 		}
 		"""]
