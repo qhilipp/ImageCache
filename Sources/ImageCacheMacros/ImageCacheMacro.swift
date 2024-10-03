@@ -87,6 +87,15 @@ public struct ImageCacheMacro: PeerMacro {
 		let cacheIdentifier = identifierPrefix.appending("Cache")
 		
 		#if canImport(UIKit)
+		let imageObtainment: DeclSyntax = "let uiImage = UIImage(data: \(raw: variableIdentifier))"
+		let imageCacheInstallation: DeclSyntax = "\(raw: cacheIdentifier) = Image(uiImage: uiImage)"
+		#elseif canImport(AppKit)
+		let imageObtainment: DeclSyntax = "let nsImage = NSImage(data: \(raw: variableIdentifier))"
+		let imageCacheInstallation: DeclSyntax = "\(raw: cacheIdentifier) = Image(nsImage: nsImage)"
+		#else
+		throw ImageCacheError.osNotSupported
+		#endif
+		
 		return ["""
 		private var \(raw: hashIdentifier): Int = 0
 		private var \(raw: cacheIdentifier): Image?
@@ -94,18 +103,15 @@ public struct ImageCacheMacro: PeerMacro {
 			get {
 				if \(raw: variableIdentifier).hashValue != \(raw: hashIdentifier),
 					let \(raw: variableIdentifier),
-					let uiImage = UIImage(data: \(raw: variableIdentifier))
+					\(imageObtainment)
 				{
-					\(raw: cacheIdentifier) = Image(uiImage: uiImage)
+					\(imageCacheInstallation)
 					\(raw: hashIdentifier) = \(raw: variableIdentifier).hashValue
 				}
 				return \(raw: cacheIdentifier)
 			}
 		}
 		"""]
-		#else
-		throw ImageCacheError.osNotSupported
-		#endif
 	}
 }
 
