@@ -5,7 +5,7 @@ import SwiftSyntax
 import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
 
-enum ImageCacheError: CustomStringConvertible, Error {
+public enum ImageCacheError: CustomStringConvertible, Error {
 	case internalError
 	case onlyVariableDecl
 	case mustHaveSuffix(String, String)
@@ -13,7 +13,7 @@ enum ImageCacheError: CustomStringConvertible, Error {
 	case emptyPrefix(String)
 	case osNotSupported
 	
-	var description: String {
+	public var description: String {
 		switch self {
 			case .internalError: "@ImageChage produced an internal error, please report"
 			case .onlyVariableDecl: "@ImageCache only allows variable declarations"
@@ -27,7 +27,8 @@ enum ImageCacheError: CustomStringConvertible, Error {
 
 public struct ImageCacheMacro: PeerMacro {
 	public static func expansion(of node: SwiftSyntax.AttributeSyntax, providingPeersOf declaration: some SwiftSyntax.DeclSyntaxProtocol, in context: some SwiftSyntaxMacros.MacroExpansionContext) throws -> [SwiftSyntax.DeclSyntax] {
-		let dataType = "Data"
+		let dataType = "Data?"
+		let unwrappedDataType = "Data"
 		
 		guard let variableDeclaration = declaration.as(SwiftSyntax.VariableDeclSyntax.self) else {
 			throw ImageCacheError.onlyVariableDecl
@@ -43,16 +44,15 @@ public struct ImageCacheMacro: PeerMacro {
 		
 		let variableIdentifier = identifierPattern.identifier.text
 		
-		guard firstBinding.typeAnnotation?.type.as(OptionalTypeSyntax.self)?.wrappedType.description == dataType else {
+		guard firstBinding.typeAnnotation?.type.as(OptionalTypeSyntax.self)?.description == dataType else {
 			throw ImageCacheError.mustBeType(variableIdentifier, dataType)
 		}
 		
-		guard variableIdentifier.hasSuffix(dataType) else {
-			throw ImageCacheError.mustHaveSuffix(variableIdentifier, dataType)
+		guard variableIdentifier.hasSuffix(unwrappedDataType) else {
+			throw ImageCacheError.mustHaveSuffix(variableIdentifier, unwrappedDataType)
 		}
 		
-		let prefixLength = variableIdentifier.index(variableIdentifier.endIndex, offsetBy: -dataType.count)
-		let identifierPrefix = String(variableIdentifier[..<prefixLength])
+		let identifierPrefix = String(variableIdentifier.dropLast(unwrappedDataType.count))
 		
 		guard !identifierPrefix.isEmpty else {
 			throw ImageCacheError.emptyPrefix(variableIdentifier)
