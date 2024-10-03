@@ -25,31 +25,6 @@ enum ImageCacheError: CustomStringConvertible, Error {
 	}
 }
 
-/// Implementation of the `ImageCache` macro, which takes no arguments
-/// and is attached to a variable of type `Data` and creates a computed property
-/// that resembles that `Data` object as an `Image`. The `Data` object should
-/// be named with a "Data"-suffix. For example
-///
-/// 	@ImageCache
-/// 	var profilePictureData: Data?
-///
-/// 	will expand to
-///
-/// 	var profilePictureData: Data?
-/// 	private var profilePictureHash: Int = 0
-///		private var profilePictureCache: Image?
-///		var profilePicture: Image? {
-///			get {
-///				if profilePictureData.hashValue != profilePictureHash,
-///					let profilePictureData,
-///					let uiImage = UIImage(data: profilePictureData)
-///				{
-///					profilePictureCache = Image(uiImage: uiImage)
-///					profilePictureHash = profilePictureData.hashValue
-///				}
-///				return profilePictureCache
-///			}
-///		}
 public struct ImageCacheMacro: PeerMacro {
 	public static func expansion(of node: SwiftSyntax.AttributeSyntax, providingPeersOf declaration: some SwiftSyntax.DeclSyntaxProtocol, in context: some SwiftSyntaxMacros.MacroExpansionContext) throws -> [SwiftSyntax.DeclSyntax] {
 		let dataType = "Data"
