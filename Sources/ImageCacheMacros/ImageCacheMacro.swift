@@ -28,7 +28,7 @@ public enum ImageCacheError: CustomStringConvertible, Error {
 public struct ImageCacheMacro: PeerMacro {
 	public static func expansion(of node: SwiftSyntax.AttributeSyntax, providingPeersOf declaration: some SwiftSyntax.DeclSyntaxProtocol, in context: some SwiftSyntaxMacros.MacroExpansionContext) throws -> [SwiftSyntax.DeclSyntax] {
 		let dataType = "Data?"
-		let unwrappedDataType = "Data"
+		let unwrappedDataType = String(dataType.dropLast())
 		
 		guard let variableDeclaration = declaration.as(SwiftSyntax.VariableDeclSyntax.self) else {
 			throw ImageCacheError.onlyVariableDecl
