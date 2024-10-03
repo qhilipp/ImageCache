@@ -14,14 +14,14 @@ let testMacros: [String: Macro.Type] = [
 
 final class ImageCacheTests: XCTestCase {
     func testMacro() throws {
-        #if canImport(ImageCacheMacros)
+        #if canImport(ImageCache)
         assertMacroExpansion(
 			"""
 			@ImageCache
 			var testData: Data?
 			""",
             expandedSource: """
-            (a + b, "a + b")
+            var testData: Data?
             """,
             macros: testMacros
         )

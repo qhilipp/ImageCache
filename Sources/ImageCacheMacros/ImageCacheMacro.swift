@@ -4,20 +4,21 @@ import Foundation
 import SwiftSyntax
 import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
-import AppKit
 
 enum ImageCacheError: CustomStringConvertible, Error {
 	case internalError
 	case onlyVariableDecl
-	case onlyOneDecl
 	case mustHaveSuffix(String, String)
+	case mustBeType(String, String)
+	case emptyPrefix(String)
 	
 	var description: String {
 		switch self {
 			case .internalError: "@ImageChage produced an internal error, please report"
 			case .onlyVariableDecl: "@ImageCache only allows variable declarations"
-			case .onlyOneDecl: "@ImageCache only allows one variable declaration"
 			case .mustHaveSuffix(let variableIdentifier, let suffix): "@ImageCache requires \(variableIdentifier) to have the suffix \(suffix)"
+			case .mustBeType(let variableIdentifier, let type): "@ImageCache requires \(variableIdentifier) to be of type \(type)"
+			case .emptyPrefix(let variableIdentifier): "@ImageCache requires \(variableIdentifier) to have a prefix before \(variableIdentifier)"
 		}
 	}
 }
@@ -49,16 +50,14 @@ enum ImageCacheError: CustomStringConvertible, Error {
 ///		}
 public struct ImageCacheMacro: PeerMacro {
 	public static func expansion(of node: SwiftSyntax.AttributeSyntax, providingPeersOf declaration: some SwiftSyntax.DeclSyntaxProtocol, in context: some SwiftSyntaxMacros.MacroExpansionContext) throws -> [SwiftSyntax.DeclSyntax] {
+		let dataType = "Data"
+		
 		guard let variableDeclaration = declaration.as(SwiftSyntax.VariableDeclSyntax.self) else {
 			throw ImageCacheError.onlyVariableDecl
 		}
 		
-		guard variableDeclaration.bindings.count == 1 else {
-			throw ImageCacheError.onlyOneDecl
-		}
-		
 		guard let firstBinding = variableDeclaration.bindings.first else {
-			throw ImageCacheError.internalError
+			throw ImageCacheError.onlyVariableDecl
 		}
 		
 		guard let identifierPattern = firstBinding.pattern.as(IdentifierPatternSyntax.self) else {
@@ -66,18 +65,26 @@ public struct ImageCacheMacro: PeerMacro {
 		}
 		
 		let variableIdentifier = identifierPattern.identifier.text
-		let suffix = "Data"
 		
-		guard variableIdentifier.hasSuffix(suffix) else {
-			throw ImageCacheError.mustHaveSuffix(variableIdentifier, suffix)
+		guard firstBinding.typeAnnotation?.type.as(OptionalTypeSyntax.self)?.wrappedType.description == dataType else {
+			throw ImageCacheError.mustBeType(variableIdentifier, dataType)
 		}
 		
-		let prefixLength = variableIdentifier.index(variableIdentifier.endIndex, offsetBy: -suffix.count)
+		guard variableIdentifier.hasSuffix(dataType) else {
+			throw ImageCacheError.mustHaveSuffix(variableIdentifier, dataType)
+		}
+		
+		let prefixLength = variableIdentifier.index(variableIdentifier.endIndex, offsetBy: -dataType.count)
 		let identifierPrefix = String(variableIdentifier[..<prefixLength])
+		
+		guard !identifierPrefix.isEmpty else {
+			throw ImageCacheError.emptyPrefix(variableIdentifier)
+		}
 		
 		let hashIdentifier = identifierPrefix.appending("Hash")
 		let cacheIdentifier = identifierPrefix.appending("Cache")
 		
+		#if canImport(UIKit)
 		return ["""
 		private var \(raw: hashIdentifier): Int = 0
 		private var \(raw: cacheIdentifier): Image?
@@ -88,12 +95,15 @@ public struct ImageCacheMacro: PeerMacro {
 					let uiImage = UIImage(data: \(raw: variableIdentifier))
 				{
 					\(raw: cacheIdentifier) = Image(uiImage: uiImage)
-					\(raw: hashIdentifier) = \(raw: variableName).hashValue
+					\(raw: hashIdentifier) = \(raw: variableIdentifier).hashValue
 				}
 				return \(raw: cacheIdentifier)
 			}
 		}
 		"""]
+		#else
+		return ["var testData: Data?"]
+		#endif
 	}
 }
 
