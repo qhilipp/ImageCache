@@ -11,6 +11,7 @@ enum ImageCacheError: CustomStringConvertible, Error {
 	case mustHaveSuffix(String, String)
 	case mustBeType(String, String)
 	case emptyPrefix(String)
+	case osNotSupported
 	
 	var description: String {
 		switch self {
@@ -19,6 +20,7 @@ enum ImageCacheError: CustomStringConvertible, Error {
 			case .mustHaveSuffix(let variableIdentifier, let suffix): "@ImageCache requires \(variableIdentifier) to have the suffix \(suffix)"
 			case .mustBeType(let variableIdentifier, let type): "@ImageCache requires \(variableIdentifier) to be of type \(type)"
 			case .emptyPrefix(let variableIdentifier): "@ImageCache requires \(variableIdentifier) to have a prefix before \(variableIdentifier)"
+			case .osNotSupported: "@ImageCache does not support this OS"
 		}
 	}
 }
@@ -102,7 +104,7 @@ public struct ImageCacheMacro: PeerMacro {
 		}
 		"""]
 		#else
-		return ["var testData: Data?"]
+		throw ImageCacheError.osNotSupported
 		#endif
 	}
 }
