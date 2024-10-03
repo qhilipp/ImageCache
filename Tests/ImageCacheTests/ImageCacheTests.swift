@@ -9,7 +9,6 @@ let testMacros: [String: Macro.Type] = [
     "ImageCache": ImageCacheMacro.self,
 ]
 
-
 final class ImageCacheTests: XCTestCase {
     func testSuccessfulMacroExpansion() {
         assertMacroExpansion(
