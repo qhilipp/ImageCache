@@ -77,12 +77,12 @@ public struct ImageCacheMacro: PeerMacro {
 		
 		let useSwiftData: Bool
 		if !argumentsList.isEmpty {
-			guard let tokeKind = argumentsList.first?.expression.as(BooleanLiteralExprSyntax.self)?.literal.tokenKind else {
+			guard let tokenKind = argumentsList.first?.expression.as(BooleanLiteralExprSyntax.self)?.literal.tokenKind else {
 				throw ImageCacheError.mustBeBoolLiteral
 			}
-			useSwiftData = tokeKind == .keyword(.true)
+			useSwiftData = tokenKind == .keyword(.true)
 		} else {
-			useSwiftData = true
+			useSwiftData = false
 		}
 		
 		let transientMacro = useSwiftData ? "@Transient " : ""
