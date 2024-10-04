@@ -13,7 +13,7 @@ final class ImageCacheTests: XCTestCase {
     func testSuccessfulMacroExpansion() {
         assertMacroExpansion(
 			"""
-			@ImageCache
+			@ImageCache(false)
 			var testData: Data?
 			""",
             expandedSource:
@@ -37,6 +37,32 @@ final class ImageCacheTests: XCTestCase {
 			""",
             macros: testMacros
         )
+		assertMacroExpansion(
+			"""
+			@ImageCache
+			var testData: Data?
+			""",
+			expandedSource:
+			"""
+			var testData: Data?
+
+			@Transient private var testHash: Int = 0
+			@Transient private var testCache: Image?
+			var test: Image? {
+				get {
+					if testData.hashValue != testHash,
+						let testData,
+						let nsImage = NSImage(data: testData)
+					{
+						testCache = Image(nsImage: nsImage)
+						testHash = testData.hashValue
+					}
+					return testCache
+				}
+			}
+			""",
+			macros: testMacros
+		)
     }
 	
 	func testMissingSuffix() {

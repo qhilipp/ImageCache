@@ -71,9 +71,13 @@ public struct ImageCacheMacro: PeerMacro {
 		throw ImageCacheError.osNotSupported
 		#endif
 		
+		let useSwiftData = node.arguments?.as(LabeledExprListSyntax.self)?.first?.expression.as(BooleanLiteralExprSyntax.self)?.literal.tokenKind == .keyword(.true)
+		
+		let transientMacro = useSwiftData ? "@Transient " : ""
+		
 		return ["""
-		private var \(raw: hashIdentifier): Int = 0
-		private var \(raw: cacheIdentifier): Image?
+		\(raw: transientMacro)private var \(raw: hashIdentifier): Int = 0
+		\(raw: transientMacro)private var \(raw: cacheIdentifier): Image?
 		var \(raw: identifierPrefix): Image? {
 			get {
 				if \(raw: variableIdentifier).hashValue != \(raw: hashIdentifier),

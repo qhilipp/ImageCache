@@ -27,4 +27,4 @@
 /// ```
 ///	The implementation will be different depending on the target platform, macOS will use `NSImage` instead of `UIImage`.
 @attached(peer, names: arbitrary)
-public macro ImageCache() = #externalMacro(module: "ImageCacheMacros", type: "ImageCacheMacro")
+public macro ImageCache(useSwiftData: Bool = true) = #externalMacro(module: "ImageCacheMacros", type: "ImageCacheMacro")
