@@ -3,6 +3,6 @@ import Foundation
 import SwiftUI
 
 class Test {
-	@ImageCache
+	@ImageCache(useSwiftData: false)
 	var profilePictureData: Data?
 }

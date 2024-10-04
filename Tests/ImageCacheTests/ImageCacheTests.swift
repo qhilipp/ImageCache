@@ -13,8 +13,7 @@ final class ImageCacheTests: XCTestCase {
     func testSuccessfulMacroExpansion() {
         assertMacroExpansion(
 			"""
-			@ImageCache(false)
-			var testData: Data?
+			@ImageCache(useSwiftData: false)
 			""",
             expandedSource:
 			"""
