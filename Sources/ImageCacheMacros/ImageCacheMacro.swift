@@ -12,6 +12,8 @@ public enum ImageCacheError: CustomStringConvertible, Error {
 	case mustBeType(String, String)
 	case emptyPrefix(String)
 	case osNotSupported
+	case maxOneArgument
+	case mustBeBoolLiteral
 	
 	public var description: String {
 		switch self {
@@ -21,6 +23,8 @@ public enum ImageCacheError: CustomStringConvertible, Error {
 			case .mustBeType(let variableIdentifier, let type): "@ImageCache requires \(variableIdentifier) to be of type \(type)"
 			case .emptyPrefix(let variableIdentifier): "@ImageCache requires \(variableIdentifier) to have a prefix before \(variableIdentifier)"
 			case .osNotSupported: "@ImageCache does not support this OS"
+			case .maxOneArgument: "@ImageCache accepts only one argument"
+			case .mustBeBoolLiteral: "@ImageCache only accepts a bool literal argument"
 		}
 	}
 }
@@ -71,7 +75,21 @@ public struct ImageCacheMacro: PeerMacro {
 		throw ImageCacheError.osNotSupported
 		#endif
 		
-		let useSwiftData = node.arguments?.as(LabeledExprListSyntax.self)?.first?.expression.as(BooleanLiteralExprSyntax.self)?.literal.tokenKind == .keyword(.true)
+		let argumentsList = node.arguments?.as(LabeledExprListSyntax.self) ?? []
+		
+		if argumentsList.count > 1 {
+			throw ImageCacheError.maxOneArgument
+		}
+		
+		let useSwiftData: Bool
+		if !argumentsList.isEmpty {
+			guard let tokeKind = argumentsList.first?.expression.as(BooleanLiteralExprSyntax.self)?.literal.tokenKind else {
+				throw ImageCacheError.mustBeBoolLiteral
+			}
+			useSwiftData = tokeKind == .keyword(.true)
+		} else {
+			useSwiftData = true
+		}
 		
 		let transientMacro = useSwiftData ? "@Transient " : ""
 		
