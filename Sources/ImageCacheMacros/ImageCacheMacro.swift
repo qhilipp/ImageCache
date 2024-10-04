@@ -12,7 +12,6 @@ public enum ImageCacheError: CustomStringConvertible, Error {
 	case mustBeType(String, String)
 	case emptyPrefix(String)
 	case osNotSupported
-	case maxOneArgument
 	case mustBeBoolLiteral
 	
 	public var description: String {
@@ -23,7 +22,6 @@ public enum ImageCacheError: CustomStringConvertible, Error {
 			case .mustBeType(let variableIdentifier, let type): "@ImageCache requires \(variableIdentifier) to be of type \(type)"
 			case .emptyPrefix(let variableIdentifier): "@ImageCache requires \(variableIdentifier) to have a prefix before \(variableIdentifier)"
 			case .osNotSupported: "@ImageCache does not support this OS"
-			case .maxOneArgument: "@ImageCache accepts only one argument"
 			case .mustBeBoolLiteral: "@ImageCache only accepts a bool literal argument"
 		}
 	}
@@ -76,10 +74,6 @@ public struct ImageCacheMacro: PeerMacro {
 		#endif
 		
 		let argumentsList = node.arguments?.as(LabeledExprListSyntax.self) ?? []
-		
-		if argumentsList.count > 1 {
-			throw ImageCacheError.maxOneArgument
-		}
 		
 		let useSwiftData: Bool
 		if !argumentsList.isEmpty {
