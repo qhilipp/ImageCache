@@ -10,8 +10,8 @@
 ///
 /// ```swift
 /// var profilePictureData: Data?
-/// private var profilePictureHash: Int = 0
-///	private var profilePictureCache: Image?
+/// @Transient private var profilePictureHash: Int = 0
+///	@Transient private var profilePictureCache: Image?
 ///	var profilePicture: Image? {
 ///		get {
 ///			if profilePictureData.hashValue != profilePictureHash,
