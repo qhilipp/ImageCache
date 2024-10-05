@@ -22,10 +22,10 @@ var profilePictureData: Data?
 ```
 
 ## Parameters
-The only parameter is the `useSwiftData: Bool` which is `true` by default. When this parameter is set to true, SwiftData must also be imported, because it adds the [`@Transient`](https://developer.apple.com/documentation/swiftdata/transient()) macro to the helper variables, that handle the caching. Since this macro is intended to be used with SwiftData, you probably want to leave this to the default value, however for some test porpuses or temporary usages where you do not need persistent storage, you could set this to `false` in order to not have to import SwiftData.
+The only parameter is the `useSwiftData: Bool` which is `true` by default. When this parameter is set to true, SwiftData must also be imported, because it adds the [`@Transient`](https://developer.apple.com/documentation/swiftdata/transient()) macro to the helper variables, that handle the caching. Since this macro is intended to be used with SwiftData, you probably want to leave this to the default value, however for some test purposes or temporary usages where you do not need persistent storage, you could set this to `false` in order to not have to import SwiftData.
 
 ## Restrictions and compatibility
-Since this macro creates multiple new variables for handeling the caching and the final image variable, which are appropriately named, the definition must state that this macro can create 'arbitraty' names, which restricts the macro to not being used at a global level. But since this macro is intended to be used with SwiftData, you will use it inside classes anyways. 
+Since this macro creates multiple new variables for handling the caching and the final image variable, which are appropriately named, the definition must state that this macro can create 'arbitrary' names, which restricts the macro to not being used at a global level. But since this macro is intended to be used with SwiftData, you will use it inside classes anyways. 
 
 Also peer macros, which the `@ImageCache` is, can only be applied to single variable declarations, meaning that declarations like
 ```swift
