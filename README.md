@@ -41,10 +41,10 @@ When you use `@ImageCache` to use images using SwiftData, which you probably do,
 
 ## References
 [Swift](https://developer.apple.com/documentation/swift/)
-- [Data class](https://developer.apple.com/documentation/foundation/data)
+- [Data](https://developer.apple.com/documentation/foundation/data)
 
 [SwiftUI](https://developer.apple.com/documentation/swiftui/)
- - [Image struct](https://developer.apple.com/documentation/swiftui/image)
+ - [Image](https://developer.apple.com/documentation/swiftui/image)
  
 [SwiftData](https://developer.apple.com/documentation/swiftdata)
  - [Transient macro](https://developer.apple.com/documentation/swiftdata/transient())
