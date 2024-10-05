@@ -37,7 +37,7 @@ will not compile.
 Since there is no direct way to create an `Image` from a `Data` object, the macro first creates a `UIImage` or `NSImage` depending on the platform you use. This also means, that this macro only works on platforms, that support either UIKit or AppKit, which should cover all major platforms (iOS, iPadOS and macOS), but as of now watchOS, tvOS and visionOS are not supported.
 
 ## Important Notes
-When you use `@ImageCache` to use images using SwiftData, which you probably do, then you should also attach `@Attribute(.externalStorage) to the `Data?` object, the reason for this is explained in [this article](https://www.hackingwithswift.com/quick-start/swiftdata/how-to-store-swiftdata-attributes-in-an-external-file).
+When you use `@ImageCache` to use images using SwiftData, which you probably do, then you should also attach `@Attribute(.externalStorage)` to the `Data?` object, the reason for this is explained in [this article](https://www.hackingwithswift.com/quick-start/swiftdata/how-to-store-swiftdata-attributes-in-an-external-file).
 
 ## References
 [Swift](https://developer.apple.com/documentation/swift/)
