@@ -1,6 +1,6 @@
 /// A macro to ease the use of images using SwiftData, by automatically providing a SwiftUI `Image`.
 ///
-/// Annotate a variable of type `Data?` with the `@ImageCache` to macro to get a computed property that resembles that `Data?` as a SwiftUI `Image`. The data variable must have a name ending with 'Data'. For example
+/// Annotate a variable of type `Data?` with the `@ImageCache` macro to get a computed property that resembles that `Data?` as a SwiftUI `Image?`. The data variable must have a name ending with 'Data'. For example
 ///
 /// ```swift
 /// @ImageCache
