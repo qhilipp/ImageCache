@@ -28,7 +28,11 @@ public enum ImageCacheError: CustomStringConvertible, Error {
 }
 
 public struct ImageCacheMacro: PeerMacro {
-	public static func expansion(of node: SwiftSyntax.AttributeSyntax, providingPeersOf declaration: some SwiftSyntax.DeclSyntaxProtocol, in context: some SwiftSyntaxMacros.MacroExpansionContext) throws -> [SwiftSyntax.DeclSyntax] {
+	public static func expansion(
+		of node: SwiftSyntax.AttributeSyntax,
+		providingPeersOf declaration: some SwiftSyntax.DeclSyntaxProtocol,
+		in context: some SwiftSyntaxMacros.MacroExpansionContext
+	) throws -> [SwiftSyntax.DeclSyntax] {
 		let dataType = "Data?"
 		let unwrappedDataType = String(dataType.dropLast())
 		
@@ -63,15 +67,19 @@ public struct ImageCacheMacro: PeerMacro {
 		let hashIdentifier = identifierPrefix.appending("Hash")
 		let cacheIdentifier = identifierPrefix.appending("Cache")
 		
+		let imageHandling: DeclSyntax = """
 		#if canImport(UIKit)
-		let imageObtainment: DeclSyntax = "let uiImage = UIImage(data: \(raw: variableIdentifier))"
-		let imageCacheInstallation: DeclSyntax = "\(raw: cacheIdentifier) = Image(uiImage: uiImage)"
+		if let uiImage = UIImage(data: \(raw: variableIdentifier)) {
+			\(raw: cacheIdentifier) = Image(uiImage: uiImage)
+		}
 		#elseif canImport(AppKit)
-		let imageObtainment: DeclSyntax = "let nsImage = NSImage(data: \(raw: variableIdentifier))"
-		let imageCacheInstallation: DeclSyntax = "\(raw: cacheIdentifier) = Image(nsImage: nsImage)"
+		if let nsImage = NSImage(data: \(raw: variableIdentifier)) {
+			\(raw: cacheIdentifier) = Image(nsImage: nsImage)
+		}
 		#else
-		throw ImageCacheError.osNotSupported
+		#error("Image cache: OS not supported")
 		#endif
+		"""
 		
 		let argumentsList = node.arguments?.as(LabeledExprListSyntax.self) ?? []
 		
@@ -93,10 +101,9 @@ public struct ImageCacheMacro: PeerMacro {
 		var \(raw: identifierPrefix): Image? {
 			get {
 				if \(raw: variableIdentifier).hashValue != \(raw: hashIdentifier),
-					let \(raw: variableIdentifier),
-					\(imageObtainment)
+				   let \(raw: variableIdentifier)
 				{
-					\(imageCacheInstallation)
+					\(imageHandling)
 					\(raw: hashIdentifier) = \(raw: variableIdentifier).hashValue
 				}
 				return \(raw: cacheIdentifier)
